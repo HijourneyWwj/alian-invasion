@@ -242,7 +242,7 @@ class AlienInvasion:
             if self.stats.ships_left > 0:  # 仅在飞船数量大于 0 时重置游戏
                 self._reset_ai_game()  # 调用重置游戏的方法
                 print(4)
-            sleep(0.5)  # 画面暂停 0.5 秒
+            # sleep(0.5)  # 画面暂停 0.5 秒
             self.ship.show()  # 显示新的飞船
             print(2)
         if self.stats.ships_left == 0:
