@@ -139,7 +139,8 @@ class AlienInvasion:
                 for sprite in collided_sprites:
                     explosion = Explosion(self, sprite.rect.center)  # 在外星人的位置创建一个爆炸实例
                     self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
-                    print(self.explosions.add(explosion))
+                    # print(self.explosions.add(explosion))
+                    print('bullet {}', pygame.time.get_ticks())
                 self.stats.score += self.settings.alien_points * len(
                     collided_sprites)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
                 self.sound.play_music("explosion")
@@ -174,8 +175,13 @@ class AlienInvasion:
             self.play_button.draw_button()
         if not self.settings.game_status and self.game_active:  # 如果游戏启动，但是处于暂停状态，就绘制 continue 按钮
             self.continue_button.draw_button()
-        self.explosions.update()
+
+        # if explosions empty
+        # if not self.explosions.empty():
+        #     print('draw {}', pygame.time.get_ticks())
         self.explosions.draw(self.screen)
+
+        self.explosions.update()
         pygame.display.flip()  # 让最近绘制的屏幕可见，确保每次用户操作完成后，游戏页面都跟随刷新
 
     def _fire_bullet(self):
@@ -222,7 +228,8 @@ class AlienInvasion:
     def _ship_explosion(self):
         explosion = Explosion(self, self.ship.rect.center)  # 创建一个爆炸实例
         self.explosions.add(explosion)  # 将爆炸实例添加到类中，在画面中自动显示
-        print(self.explosions.add(explosion))
+        # print(self.explosions.add(explosion))
+        print('ship explosion {}', pygame.time.get_ticks())
         self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
         print(1)
@@ -238,8 +245,7 @@ class AlienInvasion:
             sleep(0.5)  # 画面暂停 0.5 秒
             self.ship.show()  # 显示新的飞船
             print(2)
-        else:
-            # if self.stats.ships_left == 0:
+        if self.stats.ships_left == 0:
             self.game_active = False
             pygame.mouse.set_visible(True)  # 游戏开始时隐藏鼠标，减少对游戏干扰
             self.ship.hide()

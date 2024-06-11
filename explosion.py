@@ -16,7 +16,9 @@ class Explosion(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
+
         if current_time - self.start_time > 200:  # 爆炸效果持续200毫秒
+            print('{}, {}'.format(current_time, self.start_time))
             self.kill()  # 移除爆炸精灵
             print("移除成功")
 
