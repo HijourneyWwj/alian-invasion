@@ -12,11 +12,11 @@ class settings:
         #子弹设置
         self.bullet_width = 3  #3
         self.bullet_height = 15  #15
-        self.bullet_color = (255, 128, 0)
+        self.bullet_color = (60, 60, 60)   #新的颜色 (255, 128, 0)
         self.bullet_allowed = 5  #3
 
         #外星人设置
-        self.fleet_drop_speed = 80  #原始10
+        self.fleet_drop_speed = 10  #原始10
 
         #游戏节奏
         self.speedup_scale = 1.1

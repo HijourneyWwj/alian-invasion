@@ -13,7 +13,7 @@ class Scoreboard():
         self.stats = ai_game.stats
 
         # 显示得分信息时使用的字体设置
-        self.text_color = (255, 255, 255)  # 文字颜色
+        self.text_color =(0, 0, 0)  # 文字颜色  (255, 255, 255)
         self.font = pygame.font.SysFont(None, 48)  # 调用pygame的方法，生成按钮中文字的样式属性
 
         # 初始化得分图像
