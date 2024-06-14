@@ -41,7 +41,7 @@ class AlienInvasion:
 
     def run_game(self):
         """开始游戏的主循环"""
-        # self.sound.play_music("bgm")
+        self.sound.play_music("bgm")
         self.background.update_background()
         while True:
             # 通过辅助方法，简化方法，并将事件循环隔离
@@ -137,10 +137,8 @@ class AlienInvasion:
         if collisions:
             for collided_sprites in collisions.values():
                 for sprite in collided_sprites:
-                    explosion = Explosion(self, sprite.rect.center)  # 在外星人的位置创建一个爆炸实例
+                    explosion = Explosion(self, sprite.rect.center,0)  # 在外星人的位置创建一个爆炸实例
                     self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
-                    # print(self.explosions.add(explosion))
-                    print('bullet {}', pygame.time.get_ticks())
                 self.stats.score += self.settings.alien_points * len(
                     collided_sprites)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
                 self.sound.play_music("explosion")
@@ -175,12 +173,7 @@ class AlienInvasion:
             self.play_button.draw_button()
         if not self.settings.game_status and self.game_active:  # 如果游戏启动，但是处于暂停状态，就绘制 continue 按钮
             self.continue_button.draw_button()
-
-        # if explosions empty
-        # if not self.explosions.empty():
-        #     print('draw {}', pygame.time.get_ticks())
         self.explosions.draw(self.screen)
-
         self.explosions.update()
         pygame.display.flip()  # 让最近绘制的屏幕可见，确保每次用户操作完成后，游戏页面都跟随刷新
 
@@ -226,13 +219,10 @@ class AlienInvasion:
 
     # 测试爆炸
     def _ship_explosion(self):
-        explosion = Explosion(self, self.ship.rect.center)  # 创建一个爆炸实例
+        explosion = Explosion(self, self.ship.rect.center,1)  # 创建一个爆炸实例
         self.explosions.add(explosion)  # 将爆炸实例添加到类中，在画面中自动显示
-        # print(self.explosions.add(explosion))
-        print('ship explosion {}', pygame.time.get_ticks())
         self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
-        print(1)
 
     def _ship_hit(self):
         """响应飞船和外星人的碰撞"""
@@ -241,15 +231,10 @@ class AlienInvasion:
             self.sb._prep_score_ships()  # 更新剩余飞船
             if self.stats.ships_left > 0:  # 仅在飞船数量大于 0 时重置游戏
                 self._reset_ai_game()  # 调用重置游戏的方法
-                print(4)
-            # sleep(0.5)  # 画面暂停 0.5 秒
-            self.ship.show()  # 显示新的飞船
-            print(2)
         if self.stats.ships_left == 0:
             self.game_active = False
             pygame.mouse.set_visible(True)  # 游戏开始时隐藏鼠标，减少对游戏干扰
             self.ship.hide()
-            print(3)
 
 
     def _check_fleet_edges(self):
@@ -269,16 +254,17 @@ class AlienInvasion:
         """检查是否有外星人到达了屏幕的下边缘,则与触碰飞船同等处理"""
         for alien in self.aliens.sprites():
             if alien.rect.bottom >= self.settings.screen_height:
+                self._ship_explosion()  # 添加爆炸效果
                 self._ship_hit()
                 break
-
 
     def _reset_ai_game(self):  # 重置游戏
         self.aliens.empty()  # 清空外星人列表
         self.bullets.empty()  # 清空子弹列表
         self._create_fleet()  # 创建一个新的外星舰队
         self.ship.center_ship()  # 将飞船放在屏幕底部的中央
-        self.ship.show()
+        # self.ship.show()  # 显示新的飞船
+
 
 
 if __name__ == '__main__':
