@@ -13,7 +13,7 @@ from bullet import Bullet
 from alien import Alien
 from background import Background
 from explosion import Explosion
-# from sound import Sound
+from sound import Sound
 
 
 
@@ -38,11 +38,11 @@ class AlienInvasion:
         self.play_button = Button(self, "Play", (0, 0, 255))  # 创建 play 按钮
         self.continue_button = Button(self, "Continue", (0, 0, 255))  # 创建 stop 按钮
         self.background = Background(self)
-        # self.sound = Sound()
+        self.sound = Sound()
 
     def run_game(self):
         """开始游戏的主循环"""
-        # self.sound.play_music("bgm")
+        self.sound.play_music("bgm")
         self.background.update_background()
         while True:
             # 通过辅助方法，简化方法，并将事件循环隔离
@@ -73,11 +73,11 @@ class AlienInvasion:
         if not self.game_active and self.play_button.rect.collidepoint(
                 mouse_pos):  # 检查鼠标点击的位置，是否在按钮的矩形内，mouse_pos是一个（x，y）元组，记录点击的位置
             self._start_game()  # 重置游戏信息
-            # self.sound.play_music("click_button")
+            self.sound.play_music("click_button")
         """玩家点击 continue 按钮时恢复游戏"""
         if self.game_active and self.continue_button.rect.collidepoint(mouse_pos):
             self._stop_or_continue_game(False)
-            # self.sound.play_music("click_button")
+            self.sound.play_music("click_button")
 
     def _start_game(self):
         self.stats.reset_stats()
@@ -142,7 +142,7 @@ class AlienInvasion:
                     self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
                 self.stats.score += self.settings.alien_points * len(
                     collided_sprites)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
-                # self.sound.play_music("explosion")
+                self.sound.play_music("explosion")
             self.sb._prep_score()
             self.sb.check_high_score()
         if not self.aliens:
@@ -180,10 +180,11 @@ class AlienInvasion:
 
     def _fire_bullet(self):
         # 创建一颗子弹，并将其加入到group编组中
-        if len(self.bullets) < self.settings.bullet_allowed:
-            new_bullet = Bullet(self)
-            self.bullets.add(new_bullet)
-            # self.sound.play_music("shoot")
+        if self.game_active:
+            if len(self.bullets) < self.settings.bullet_allowed:
+                new_bullet = Bullet(self)
+                self.bullets.add(new_bullet)
+                self.sound.play_music("shoot")
 
     def _create_fleet(self):
         """创建一个外星舰队"""
@@ -222,7 +223,7 @@ class AlienInvasion:
     def _ship_explosion(self):
         explosion = Explosion(self, self.ship.rect.center,1)  # 创建一个爆炸实例
         self.explosions.add(explosion)  # 将爆炸实例添加到类中，在画面中自动显示
-        # self.sound.play_music("explosion")  # 播放爆炸音效
+        self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
 
     def _ship_hit(self):
