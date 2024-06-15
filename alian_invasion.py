@@ -6,7 +6,7 @@ import pygame  # 游戏开发的库
 import alien
 from settings import settings
 from game_stats import GameStats
-# from scoreboard import Scoreboard
+from scoreboard import Scoreboard
 from button import Button
 from ship import Ship
 from bullet import Bullet
@@ -27,7 +27,7 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
         self.stats = GameStats(self)  # 创建一个用于存储游戏统计信息的实例
-        # self.sb = Scoreboard(self)
+        self.sb = Scoreboard(self)
         self.ship = Ship(self)  # 此处的self，指的是AlienInvasion这个类的一个对象实例
         self.bullets = pygame.sprite.Group()  # 创建一个Group类下的实例
         self.aliens = pygame.sprite.Group()  # 创建一个Group类下的实例
@@ -85,9 +85,9 @@ class AlienInvasion:
         pygame.mouse.set_visible(False)  # 游戏开始时隐藏鼠标，减少对游戏干扰
         self.settings.initialize_dynamic_settings()
         self.settings.game_status = True
-        # self.sb._prep_score()  # 重新绘制得分（背后的逻辑是：先更新/重置game_stats里的score，再用_prep_score（）方法把socre绘制成图像，再当主程序的screen_update方法运行时，调用show_score方法展示在屏幕上）
-        # self.sb._prep_level()  # 重新绘制等级
-        # self.sb._prep_score_ships()  # 绘制分数板块的剩余飞船编组
+        self.sb._prep_score()  # 重新绘制得分（背后的逻辑是：先更新/重置game_stats里的score，再用_prep_score（）方法把socre绘制成图像，再当主程序的screen_update方法运行时，调用show_score方法展示在屏幕上）
+        self.sb._prep_level()  # 重新绘制等级
+        self.sb._prep_score_ships()  # 绘制分数板块的剩余飞船编组
 
     def _stop_or_continue_game(self, status):
         """控制游戏是否暂停，传入true暂停游戏，传入false继续游戏，此时外星人和子弹停止移动，飞船和子弹不可操作，并展现继续按钮"""
@@ -142,8 +142,8 @@ class AlienInvasion:
                 self.stats.score += self.settings.alien_points * len(
                     collided_sprites)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
                 # self.sound.play_music("explosion")
-            # self.sb._prep_score()
-            # self.sb.check_high_score()
+            self.sb._prep_score()
+            self.sb.check_high_score()
         if not self.aliens:
             # 如果所有的外星人队列都被消灭了，就删除现有的子弹并创建一个新的外星舰队
             self.start_new_level()
@@ -153,7 +153,7 @@ class AlienInvasion:
         self._create_fleet()
         self.settings.increase_speed()
         self.stats.level += 1  # 改变数值后，还需要调用方法更新图像
-        # self.sb._prep_level()
+        self.sb._prep_level()
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
@@ -168,7 +168,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():  # 遍历group中的子弹，并且绘制到屏幕上
             bullet.draw_bullet()
         self.aliens.draw(self.screen)  # 将aliens编组里的alien都绘制到屏幕上
-        # self.sb.show_score()  # 显示得分（创建得分实例）
+        self.sb.show_score()  # 显示得分（创建得分实例）
         if not self.game_active:  # 如果游戏处于非活动状态，就绘制 Play 按钮
             self.play_button.draw_button()
         if not self.settings.game_status and self.game_active:  # 如果游戏启动，但是处于暂停状态，就绘制 continue 按钮
@@ -228,7 +228,7 @@ class AlienInvasion:
         """响应飞船和外星人的碰撞"""
         if self.stats.ships_left >= 1:  # 判断飞船剩余数量
             self.stats.ships_left -= 1  # 剩余飞船数量 - 1
-            # self.sb._prep_score_ships()  # 更新剩余飞船
+            self.sb._prep_score_ships()  # 更新剩余飞船
             if self.stats.ships_left > 0:  # 仅在飞船数量大于 0 时重置游戏
                 self._reset_ai_game()  # 调用重置游戏的方法
         if self.stats.ships_left == 0:
