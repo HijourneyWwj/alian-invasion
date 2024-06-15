@@ -11,7 +11,7 @@ class Background():
         self.background_move_speed = 1
 
         # 加载背景图像并获取其外接矩形
-        background_path = os.path.join(os.path.dirname(__file__), "images/bg6.png")
+        background_path = os.path.join(os.path.dirname(__file__), "images/bg_short.png")
         self.background = pygame.image.load(background_path).convert()
         # 调整背景图像大小以适应屏幕宽度
         self.background = pygame.transform.scale(self.background,

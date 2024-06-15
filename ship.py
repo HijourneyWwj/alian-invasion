@@ -12,7 +12,7 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.screen_rect = ai_game.screen.get_rect()
 
         # 加载飞船图像并获取其外接矩形
-        self.image = pygame.image.load('images/ship.bmp')
+        self.image = pygame.image.load('images/new_ship.png')
         self.rect = self.image.get_rect()
 
         # 每艘飞船都放在屏幕底部的中央

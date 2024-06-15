@@ -11,7 +11,7 @@ from button import Button
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
-# from background import Background
+from background import Background
 # # from sound import Sound
 # from explosion import Explosion
 
@@ -37,12 +37,12 @@ class AlienInvasion:
         self.play_button = Button(self, "Play", (0, 0, 255))  # 创建 play 按钮
         self.continue_button = Button(self, "Continue", (0, 0, 255))  # 创建 stop 按钮
         # self.sound = Sound()
-        # self.background = Background(self)
+        self.background = Background(self)
 
     def run_game(self):
         """开始游戏的主循环"""
         # self.sound.play_music("bgm")
-        # self.background.update_background()
+        self.background.update_background()
         while True:
             # 通过辅助方法，简化方法，并将事件循环隔离
             self._check_events()
@@ -158,7 +158,7 @@ class AlienInvasion:
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         # 绘制背景图片
-        # self.background.blit_background()  # 绘制背景图
+        self.background.blit_background()  # 绘制背景图
         # self.background.update_background()  #更新背景图
         if not self.ship.hidden:
             self.ship.blitme()  # 注意顺序，要在下一行代码前完成，这样才能执行下一行代码统一刷新页面

@@ -12,7 +12,7 @@ class settings:
         #子弹设置
         self.bullet_width = 3  #3
         self.bullet_height = 15  #15
-        self.bullet_color = (60, 60, 60)   #新的颜色 (255, 128, 0)
+        self.bullet_color = (255, 128, 0)   #原色(60, 60, 60)
         self.bullet_allowed = 5  #3
 
         #外星人设置
