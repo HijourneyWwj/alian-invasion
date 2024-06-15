@@ -11,15 +11,11 @@ class Background():
         self.background_move_speed = 1
 
         # 加载背景图像并获取其外接矩形
-        background_path = os.path.join(os.path.dirname(__file__), "images/bg_short.png")
+        background_path = os.path.join(os.path.dirname(__file__), "images/bg_long.png")
         self.background = pygame.image.load(background_path).convert()
         # 调整背景图像大小以适应屏幕宽度
         self.background = pygame.transform.scale(self.background,
                                                  (self.screen_rect.width, self.background.get_height()))
-
-
-
-
         self.rect = self.background.get_rect()
 
         # 背景图放在屏幕底部的中央
@@ -29,32 +25,18 @@ class Background():
         self.y = float(self.rect.y)
         self.bg_direction = 1  # 背景图移动方向， 1 向上，-1 向下
 
-        # self._change_background_size()
-
-    def blit_background(self):
-        """在指定位置绘制背景图"""
-        self.screen.blit(self.background, (self.rect.x, self.rect.y))
-
-
-    #计算背景图片的大小
-    # def _change_background_size(self):
-    #     aspect_ratio = self.image.get_height() / self.image.get_width()
-    #     new_background_height = self.settings.screen_width * aspect_ratio
-    #     self.background = pygame.transform.scale(self.image, (self.settings.screen_width, new_background_height))
-
-
-
     # 参考外星人的移动方式
     def check_background_edges(self):
-        """如果背景图位于屏幕边缘，就返回 True"""
+        """判断背景图是否到达屏幕边缘，是返回 True"""
         screen_rect = self.screen.get_rect()
         if self.rect.top == 0 or self.rect.bottom == screen_rect.bottom:
             return True
 
     def update_background(self):
+        """改变背景图的 Y 坐标，让背景图“运动”起来"""
         self.y += self.background_move_speed * self.bg_direction
         self.rect.y = self.y
 
-
-
-
+    def blit_background(self):
+        """在指定位置绘制背景图"""
+        self.screen.blit(self.background, (self.rect.x, self.rect.y))
