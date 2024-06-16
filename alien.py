@@ -1,21 +1,37 @@
 import pygame
 from pygame.sprite import Sprite
+from shield import Shield
+
 
 class Alien(Sprite):
-    def __init__(self, ai_game):
-        #初始化外星人并设置起始位置
+    def __init__(self, ai_game, alien_type):
+        # 初始化外星人并设置起始位置
         super().__init__()
         self.ai_game = ai_game
         self.screen = ai_game.screen
         self.settings = ai_game.settings
+        self.alien_type = alien_type
+
+        # 初始化护盾
+        self.boss_shield_color = (255, 0, 0, 64)  # 红色半透明护盾
+        self.boss_blood = self.settings.boss_blood  # 每次初始化boss的血量
+        self.shield = None
+
+        #初始化alien
         self._initialize_alien()
+
 
 
     def _initialize_alien(self):
         # 是否为外星人 boss 关卡,默认为假
         if self.ai_game.stats.level % 5 == 0:
             self.image = pygame.image.load('images/new_boss.png').convert_alpha()  # Load image with transparency
+            self.rect = self.image.get_rect()
             self.alien_boss = True
+
+            # 初始化护盾
+            self.activate_shield()
+
         else:
             self.image = pygame.image.load('images/new_alien.png').convert_alpha()
             self.alien_boss = False
@@ -28,6 +44,18 @@ class Alien(Sprite):
         self.x = float(self.rect.x)
 
 
+    def activate_shield(self):
+        """激活护盾"""
+        self.shield = Shield(self, self.boss_shield_color, self.boss_blood)  # 传入boss的护盾色，血量等
+        self.shield.add(self.ai_game.shields)
+
+
+    def deactivate_shield(self):
+        """取消护盾"""
+        if self.shield:
+            self.shield.kill()
+            self.shield = None
+
     def check_edges(self):
         """如果外星人位于屏幕边缘，就返回 True"""
         screen_rect = self.screen.get_rect()
@@ -36,12 +64,9 @@ class Alien(Sprite):
 
     def update(self):
         # 当游戏未暂停时，才向右移动外星人。否则不运动
-        if self.settings.game_status: #当 game_status 的状态是true 进行中时，外星人才向右运动
+        if self.settings.game_status:  # 当 game_status 的状态是true 进行中时，外星人才向右运动
             self.x += self.settings.alien_speed * self.settings.fleet_direction
             self.rect.x = self.x
-
-    def fire_bullet(self):
-        """外星人发射子弹"""
-        new_bullet = Bullet(self.ai_game, shooter='alien')
-        self.ai_game.alien_bullets.add(new_bullet)
-
+        # 更新护盾的位置
+        if self.shield:
+            self.shield.update()

@@ -12,7 +12,7 @@ class Sound:
         self.shoot_sound.set_volume(0.8)
         self.explosion_sound.set_volume(0.8)
         self.bgm_sound.set_volume(0.8)
-        self.alien_shoot_sound.set_volume(0.4)
+        self.alien_shoot_sound.set_volume(0.1)
         self.boss_shoot_sound.set_volume(0.8)
 
 
