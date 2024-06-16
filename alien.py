@@ -5,20 +5,28 @@ class Alien(Sprite):
     def __init__(self, ai_game):
         #初始化外星人并设置起始位置
         super().__init__()
+        self.ai_game = ai_game
         self.screen = ai_game.screen
         self.settings = ai_game.settings
+        self._initialize_alien()
 
-        #加载外星人图像并设置其rect 属性
-        self.image = pygame.image.load('images/new_alien.png')
+
+    def _initialize_alien(self):
+        # 是否为外星人 boss 关卡,默认为假
+        if self.ai_game.stats.level % 5 == 0:
+            self.image = pygame.image.load('images/alienboss.png').convert_alpha()  # Load image with transparency
+            self.alien_boss = True
+        else:
+            self.image = pygame.image.load('images/new_alien.png').convert_alpha()
+            self.alien_boss = False
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
 
-        #每个外星人最初都在屏幕的左上角区域
+        # 每个外星人最初都在屏幕的左上角区域
         self.rect.x = self.rect.width
         self.rect.y = self.rect.height
+        self.x = float(self.rect.x)
 
-        # 加载外星人爆炸图片并获取rect属性
-        self.boom_image = pygame.image.load('images/new_boom.png')
-        self.boom_rect = self.boom_image.get_rect()
 
     def check_edges(self):
         """如果外星人位于屏幕边缘，就返回 True"""
@@ -32,5 +40,8 @@ class Alien(Sprite):
             self.x += self.settings.alien_speed * self.settings.fleet_direction
             self.rect.x = self.x
 
-
+    def fire_bullet(self):
+        """外星人发射子弹"""
+        new_bullet = Bullet(self.ai_game, shooter='alien')
+        self.ai_game.alien_bullets.add(new_bullet)
 

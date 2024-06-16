@@ -134,7 +134,8 @@ class AlienInvasion:
     def _check_bullet_alien_collision(self):
         # 检查是否有子弹击中了外星人
         # 如果是，就删除相应的子弹和外星人
-        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)  # 判断子弹和外星人是否有碰撞（删除元素后，字典会变成0）
+        """测试新的碰撞方法"""
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True, pygame.sprite.collide_mask)  # 判断子弹和外星人是否有碰撞（删除元素后，字典会变成0）
         if collisions:
             for collided_sprites in collisions.values():
                 for sprite in collided_sprites:
@@ -147,15 +148,15 @@ class AlienInvasion:
             self.sb.check_high_score()
         if not self.aliens:
             # 如果所有的外星人队列都被消灭了，就删除现有的子弹并创建一个新的外星舰队
-            self.start_new_level()
+             self.start_new_level()
 
 
     def start_new_level(self):
-        self.bullets.empty()
-        self._create_fleet()
-        self.settings.increase_speed()
-        self.stats.level += 1  # 改变数值后，还需要调用方法更新图像
-        self.sb._prep_level()
+        self.stats.level += 1  # 游戏关卡+1，改变数值后，还需要调用方法更新图像
+        self.bullets.empty() #清空子弹
+        self._create_fleet()  #创建新的飞船队列
+        self.settings.increase_speed() #游戏提速
+        self.sb._prep_level()  # 渲染当前等级
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
@@ -192,9 +193,17 @@ class AlienInvasion:
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
         available_space_x = self.settings.screen_width - alien_width
-        number_aliens_x = available_space_x // (2 * alien_width)
-        available_space_y = self.settings.screen_height - 3 * alien_height
-        number_rows = available_space_y // (2 * alien_height)
+        number_rows = 0
+        number_aliens_x = 0
+        """每5的倍数关卡为boss关，加载boss外星人"""
+        if self.stats.level % 5 == 0:
+            number_aliens_x = available_space_x // (2 * alien_width)
+            available_space_y = self.settings.screen_height - alien_height
+            number_rows = available_space_y // alien_height
+        else:
+            number_aliens_x = available_space_x // (2 * alien_width)
+            available_space_y = self.settings.screen_height - 3 * alien_height
+            number_rows = available_space_y // (2 * alien_height)
         for row_number in range(number_rows):
             for alien_number in range(number_aliens_x):
                 self._create_alien(alien_number, row_number)
@@ -203,10 +212,22 @@ class AlienInvasion:
         """创建一个外星人并且放在当前行"""
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
-        alien.x = alien_width + 2 * alien_width * alien_number
-        alien.rect.x = alien.x
-        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        """boss关卡，boss的位置不同"""
+        if self.stats.level % 5 == 0:   #是否为boss关卡
+            alien.x = self.settings.screen_width / 2
+            alien.rect.x = alien.x
+            alien.rect.y = 30
+        else:
+            alien.x = alien_width + 2 * alien_width * alien_number
+            alien.rect.x = alien.x
+            alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+
+
+
         self.aliens.add(alien)
+
+
+
 
     def _update_aliens(self):
         # 更新外星人群中所有外星人的位置
