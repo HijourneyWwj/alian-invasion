@@ -3,6 +3,7 @@ import os
 from time import sleep
 import pygame  # 游戏开发的库
 import random
+import math
 
 import alien
 from settings import settings
@@ -70,6 +71,10 @@ class AlienInvasion:
                 self._check_click_button(mouse_pos)
             # alien shoot 事件触发后
             elif event.type == self.alien_bullet_timer and self.settings.game_status:  # 游戏暂停时外星人停止发射子弹
+                # self._fire_bullet("alien")
+                if self.stats.level % 5 == 0:  # 如果时boss 关卡，发射boss的子弹
+                    self._fire_bullet("boss")
+                else:
                     self._fire_bullet("alien")
 
     def _check_click_button(self, mouse_pos):  # 传入鼠标点击的位置以判断是否开启游戏
@@ -78,6 +83,7 @@ class AlienInvasion:
                 mouse_pos):  # 检查鼠标点击的位置，是否在按钮的矩形内，mouse_pos是一个（x，y）元组，记录点击的位置
             self._start_game()  # 重置游戏信息
             self.sound.play_music("click_button")
+            self.ship.show()
         """玩家点击 continue 按钮时恢复游戏"""
         if self.game_active and self.continue_button.rect.collidepoint(mouse_pos):
             self._stop_or_continue_game(False)
@@ -127,9 +133,9 @@ class AlienInvasion:
     """定义 alien 发射子弹的触发事件"""
 
     def _alien_shoot_event(self):
+        """alien 自动触发发射子弹"""
         self.alien_bullet_timer = pygame.USEREVENT + 1
         pygame.time.set_timer(self.alien_bullet_timer, self.settings.alien_bullet_time_break)  # 根据设置里的外星人射击时间，控制发射时长
-
 
     def _update_bullets(self):
         """更新子弹的位置，并删除已消失的子弹"""
@@ -139,17 +145,20 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0 or bullet.rect.top >= self.settings.screen_height:  #前者判断ship的子弹超过屏幕顶部，后者判断alien的子弹超过屏幕底部
                 self.bullets.remove(bullet)
             # print(len(self.bullets)) #检查是否删除了子弹
-        self._check_bullet_alien_collision()
+        self._check_collision()
 
-    def _check_bullet_alien_collision(self):
+    def _check_collision(self):
         """测试新的碰撞方法"""
-        # 检查是否有飞船的子弹击中了外星人
+        # 区分子弹来源
         ship_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'ship']
         ship_bullets_group = pygame.sprite.Group(ship_bullets)
-        alien_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'alien']
+        alien_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'alien' or bullet.shooter == 'boss']
         alien_bullets_group = pygame.sprite.Group(alien_bullets)
+        self._check_shipbullet_alien_collision(ship_bullets_group)
+        self._check_alienbullet_ship_collision(alien_bullets_group)
 
-        # 判断飞船子弹和外星人的碰撞
+    def _check_shipbullet_alien_collision(self,ship_bullets_group):
+        """判断飞船子弹和外星人的碰撞"""
         collisions = pygame.sprite.groupcollide(ship_bullets_group, self.aliens, True, True, pygame.sprite.collide_mask)
         if collisions:
             for collided_aliens in collisions.values():
@@ -165,32 +174,13 @@ class AlienInvasion:
             # 如果所有的外星人队列都被消灭了，就删除现有的子弹并创建一个新的外星舰队
             self.start_new_level()
 
-        # 判断外星人子弹和飞船的碰撞
+    def _check_alienbullet_ship_collision(self,alien_bullets_group):
+        """判断外星人子弹和飞船的碰撞"""
         ship_collision = pygame.sprite.spritecollideany(self.ship, alien_bullets_group, pygame.sprite.collide_mask)
         if ship_collision:
             self._ship_explosion()  # 添加爆炸效果
             self._ship_hit()  # 更新剩余飞船数
 
-        # if pygame.sprite.spritecollideany(self.ship, self.aliens):  # 判断飞船和外星舰队是否有“碰撞”
-        #     self._ship_explosion()  # 添加爆炸效果
-        #     self._ship_hit()  # 更新剩余飞船数
-
-        # # 检查是否有子弹击中了外星人，如果是，就删除相应的子弹和外星人
-        # collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True,
-        #                                         pygame.sprite.collide_mask)  # 判断子弹和外星人是否有碰撞（删除元素后，字典会变成0）
-        # if collisions:
-        #     for collided_aliens in collisions.values():
-        #         for alien in collided_aliens:
-        #             explosion = Explosion(self, alien.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
-        #             self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
-        #         self.stats.score += self.settings.alien_points * len(
-        #             collided_aliens)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
-        #         self.sound.play_music("explosion")
-        #     self.sb._prep_score()
-        #     self.sb.check_high_score()
-        # if not self.aliens:
-        #     # 如果所有的外星人队列都被消灭了，就删除现有的子弹并创建一个新的外星舰队
-        #     self.start_new_level()
 
     def start_new_level(self):
         self.stats.level += 1  # 游戏关卡+1，改变数值后，还需要调用方法更新图像
@@ -224,22 +214,54 @@ class AlienInvasion:
         # 创建一颗子弹，并将其加入到group编组中
         if self.game_active:  # 游戏启动时才可以发射子弹
             if shooter == "ship":  # ship 发射子弹需要校验可发射子弹的最大数量
-                ship_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'ship']
-                ship_bullets_group = pygame.sprite.Group(ship_bullets)
-                if len(ship_bullets_group) < self.settings.ship_bullet_allowed:
-                    new_bullet = Bullet(self, shooter, self.ship.rect)
-                    self.bullets.add(new_bullet)
-                    self.sound.play_music("ship_shoot")
+                self._fire_ship_bullet()
             """测试：alien 生成子弹"""
             if shooter == "alien":  # alien 发射子弹无数量限制
-                if self.aliens.sprites():
-                    #  每次选择随机数量的外星人发射子弹，随着游戏提升，设置的同时发射数量会提升
-                    num_aliens_to_shoot = min(self.settings.alien_shoot_count, len(self.aliens.sprites()))
-                    chosen_aliens = random.sample(self.aliens.sprites(), num_aliens_to_shoot)
-                    for alien in chosen_aliens:
-                        new_bullet = Bullet(self, shooter, alien.rect)
-                        self.bullets.add(new_bullet)
-                        self.sound.play_music("alien_shoot")
+                self._fire_alien_bullet()
+            if shooter == "boss":  # alien 发射子弹无数量限制
+                self._fire_boss_bullet()
+
+    def _fire_ship_bullet(self):
+        """ship 发射子弹"""
+        ship_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'ship']
+        ship_bullets_group = pygame.sprite.Group(ship_bullets)
+        direction_vector_for_ship = pygame.Vector2(0, 1)  # 子弹从飞船向外星人的向量是个默认值
+        if len(ship_bullets_group) < self.settings.ship_bullet_allowed:
+            new_bullet = Bullet(self, "ship", self.ship.rect,direction_vector_for_ship)
+            self.bullets.add(new_bullet)
+            self.sound.play_music("ship_shoot")
+
+    def _fire_alien_bullet(self):
+        """ship 发射子弹"""
+        if self.aliens.sprites():
+            #  每次选择随机数量的外星人发射子弹，随着游戏提升，设置的同时发射数量会提升
+            num_aliens_to_shoot = min(self.settings.alien_shoot_count, len(self.aliens.sprites()))
+            chosen_aliens = random.sample(self.aliens.sprites(), num_aliens_to_shoot)
+            for alien in chosen_aliens:
+
+                ship_center = pygame.Vector2(self.ship.rect.center)
+                alien_center = pygame.Vector2(alien.rect.center)
+                direction_vector = ship_center - alien_center
+                direction_vector_for_alien = direction_vector.normalize()
+
+                new_bullet = Bullet(self, "alien", alien.rect,direction_vector_for_alien)
+                self.bullets.add(new_bullet)
+                self.sound.play_music("alien_shoot")
+
+    def _fire_boss_bullet(self):
+        """发射boss的子弹"""
+        """计算boss的子弹发射角度"""
+        num_bullets = self.settings.boss_bullet_count
+        angle_step = 180 / (num_bullets - 1)  # 半圆角度步长
+        alien_list = self.aliens.sprites()
+        boss_alien_rect = alien_list[0].rect
+        for i in range(num_bullets):
+            angle = i * angle_step  # 计算每个子弹的角度
+            direction_vector = pygame.Vector2(math.cos(math.radians(angle)), math.sin(math.radians(angle)))
+            new_bullet = Bullet(self, 'boss', boss_alien_rect, direction_vector)
+            self.bullets.add(new_bullet)
+        self.sound.play_music("boss_shoot")
+
 
 
     def _create_fleet(self):
@@ -247,8 +269,8 @@ class AlienInvasion:
         alien = Alien(self)  # 创建一个外星人
         alien_width, alien_height = alien.rect.size
         available_space_x = self.settings.screen_width - alien_width
-        number_rows = 0
-        number_aliens_x = 0
+        # number_rows = 0
+        # number_aliens_x = 0
         """每5的倍数关卡为boss关，加载boss外星人"""
         if self.stats.level % 5 == 0:
             number_aliens_x = available_space_x // (2 * alien_width)

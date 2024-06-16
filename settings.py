@@ -21,10 +21,16 @@ class settings:
         # alien 子弹设置
         self.alien_bullet_width = 10  # 3
         self.alien_bullet_height = 10  # 15
-        self.alien_bullet_color = (255,0,255)  # 原色(60, 60, 60)
+        self.alien_bullet_color = (255,0,255)
+
+        # boss 设置
+        self.boss_bullet_width = 20
+        self.boss_bullet_height = 20
+        self.boss_bullet_color = (224,57,235)  #紫色
 
 
         #游戏节奏
+        self.speedup_level = 1
         self.speedup_scale = 1.1
         #外星人得分的提高速度
         self.score_scale = 1.5
@@ -42,17 +48,17 @@ class settings:
         self.fleet_direction = 1 #外星人队列的易懂方向， 1 向右，-1 向左
         self.alien_points = 50 #记分设置
         self.alien_bullet_time_break = 1200  # 外星人发射子弹的频率，初始1.2秒，随着游戏节奏逐渐加快，每次提升20毫秒
-        self.boss_bullet_amount = 5  # boss 每次同时发射5个子弹，随着游戏节奏的提高，数量变大
+        self.boss_bullet_count = 7  # boss 每次同时发射5个子弹，随着游戏节奏的提高，数量变大
         self.alien_shoot_count = 2  # 外星人同时发射子弹的数量，随着游戏节奏的提高，数量变大
 
     def increase_speed(self):
         """提高速度设置的值,乘以游戏节奏"""
+        self.speedup_level += 1
         self.ship_bullet_speed *= self.speedup_scale
         self.ship_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
         self.alien_points = round(int(self.alien_points * self.score_scale) / 10 ) * 10#取10的整数倍
         self.alien_bullet_time_break -= 20 * self.speedup_scale
         self.alien_shoot_count = round(self.alien_shoot_count * self.speedup_scale)
-
-
-
+        if self.speedup_level % 5 == 0: # 仅在每个boss 关卡后提升难度
+            self.boss_bullet_count = round(self.boss_bullet_count * self.speedup_scale)
