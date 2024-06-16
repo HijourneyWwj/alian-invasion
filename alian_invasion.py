@@ -70,7 +70,7 @@ class AlienInvasion:
                 self._check_click_button(mouse_pos)
             # alien shoot 事件触发后
             elif event.type == self.alien_bullet_timer and self.settings.game_status:  # 游戏暂停时外星人停止发射子弹
-                self._fire_bullet("alien")
+                    self._fire_bullet("alien")
 
     def _check_click_button(self, mouse_pos):  # 传入鼠标点击的位置以判断是否开启游戏
         """在玩家单击 Play 按钮时开始新游戏"""
@@ -128,7 +128,8 @@ class AlienInvasion:
 
     def _alien_shoot_event(self):
         self.alien_bullet_timer = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.alien_bullet_timer, 1000)  # 每秒发射一次子弹
+        pygame.time.set_timer(self.alien_bullet_timer, self.settings.alien_bullet_time_break)  # 根据设置里的外星人射击时间，控制发射时长
+
 
     def _update_bullets(self):
         """更新子弹的位置，并删除已消失的子弹"""
@@ -228,14 +229,18 @@ class AlienInvasion:
                 if len(ship_bullets_group) < self.settings.ship_bullet_allowed:
                     new_bullet = Bullet(self, shooter, self.ship.rect)
                     self.bullets.add(new_bullet)
-                    self.sound.play_music("shoot")
+                    self.sound.play_music("ship_shoot")
             """测试：alien 生成子弹"""
             if shooter == "alien":  # alien 发射子弹无数量限制
                 if self.aliens.sprites():
-                    alien = random.choice(self.aliens.sprites())
-                    new_bullet = Bullet(self, shooter, alien.rect)
-                    self.bullets.add(new_bullet)
-                    self.sound.play_music("shoot")  # 音乐可以考虑替增加一个
+                    #  每次选择随机数量的外星人发射子弹，随着游戏提升，设置的同时发射数量会提升
+                    num_aliens_to_shoot = min(self.settings.alien_shoot_count, len(self.aliens.sprites()))
+                    chosen_aliens = random.sample(self.aliens.sprites(), num_aliens_to_shoot)
+                    for alien in chosen_aliens:
+                        new_bullet = Bullet(self, shooter, alien.rect)
+                        self.bullets.add(new_bullet)
+                        self.sound.play_music("alien_shoot")
+
 
     def _create_fleet(self):
         """创建一个外星舰队"""

@@ -14,7 +14,7 @@ class Alien(Sprite):
     def _initialize_alien(self):
         # 是否为外星人 boss 关卡,默认为假
         if self.ai_game.stats.level % 5 == 0:
-            self.image = pygame.image.load('images/alienboss.png').convert_alpha()  # Load image with transparency
+            self.image = pygame.image.load('images/new_boss.png').convert_alpha()  # Load image with transparency
             self.alien_boss = True
         else:
             self.image = pygame.image.load('images/new_alien.png').convert_alpha()

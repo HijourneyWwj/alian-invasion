@@ -10,7 +10,7 @@ class settings:
         self.ship_limit = 3  # 限制飞船数量
 
         #ship 子弹设置
-        self.ship_bullet_width = 8  #3
+        self.ship_bullet_width = 1500  #3
         self.ship_bullet_height = 12  #15
         self.ship_bullet_color = (255, 165, 0)   #原色(60, 60, 60)
         self.ship_bullet_allowed = 5  #3
@@ -22,7 +22,7 @@ class settings:
         self.alien_bullet_width = 10  # 3
         self.alien_bullet_height = 10  # 15
         self.alien_bullet_color = (255,0,255)  # 原色(60, 60, 60)
-        # self.alien_bullet_radius = 5  # 新增的属性，定义子弹的半径
+
 
         #游戏节奏
         self.speedup_scale = 1.1
@@ -36,16 +36,23 @@ class settings:
 
     def initialize_dynamic_settings(self):
         """初始化动态设置"""
-        self.bullet_speed = 3.0  #原始2
+        self.ship_bullet_speed = 3.0  #原始2
         self.ship_speed = 1.5  #飞船左右运行速度
         self.alien_speed = 1.0
         self.fleet_direction = 1 #外星人队列的易懂方向， 1 向右，-1 向左
         self.alien_points = 50 #记分设置
+        self.alien_bullet_time_break = 1200  # 外星人发射子弹的频率，初始1.2秒，随着游戏节奏逐渐加快，每次提升20毫秒
+        self.boss_bullet_amount = 5  # boss 每次同时发射5个子弹，随着游戏节奏的提高，数量变大
+        self.alien_shoot_count = 2  # 外星人同时发射子弹的数量，随着游戏节奏的提高，数量变大
 
     def increase_speed(self):
         """提高速度设置的值,乘以游戏节奏"""
-        self.bullet_speed *= self.speedup_scale
+        self.ship_bullet_speed *= self.speedup_scale
         self.ship_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
         self.alien_points = round(int(self.alien_points * self.score_scale) / 10 ) * 10#取10的整数倍
+        self.alien_bullet_time_break -= 20 * self.speedup_scale
+        self.alien_shoot_count = round(self.alien_shoot_count * self.speedup_scale)
+
+
 
