@@ -66,7 +66,8 @@ class Scoreboard():
     def _prep_score_ships(self):
         self.score_ships = Group() # 给飞船创建一个编组
         for ship_number in range(self.stats.ships_left):
-            ship = Ship(self.ai_game)
+            ship = Ship(self)
+            ship.shield = None
             ship.rect.x = 10 + ship_number * ship.rect.width
             ship.rect.y = 10
             self.score_ships.add(ship)

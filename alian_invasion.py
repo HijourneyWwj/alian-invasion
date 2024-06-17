@@ -242,7 +242,7 @@ class AlienInvasion:
             self.sound.play_music("ship_shoot")
 
     def _fire_alien_bullet(self):
-        """ship 发射子弹"""
+        """alien 发射子弹"""
         if self.aliens.sprites():
             #  每次选择随机数量的外星人发射子弹，随着游戏提升，设置的同时发射数量会提升
             num_aliens_to_shoot = min(self.settings.alien_shoot_count, len(self.aliens.sprites()))
@@ -329,7 +329,7 @@ class AlienInvasion:
         self.ship.hide()  # 隐藏飞船
 
     def _ship_hit(self):
-        """响应飞船和外星人的碰撞"""
+        """响应飞船和外星人子弹，或外星人的碰撞"""
         if self.stats.ships_left >= 1:  # 判断飞船剩余数量
             self.stats.ships_left -= 1  # 剩余飞船数量 - 1
             self.sb._prep_score_ships()  # 更新剩余飞船

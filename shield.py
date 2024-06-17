@@ -25,13 +25,12 @@ class Shield(Sprite):
         #创建一个全透明的圆
         self.radius = max(parent.rect.width, parent.rect.height) // 2 + 10
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
-        self.rect = self.image.get_rect()
-        # self.rect.center = parent.rect.center
-
-        pygame.draw.circle(self.image, self.shield_color, (self.radius, self.radius), self.radius, self.border_thickness)  #
+        pygame.draw.circle(self.image, self.shield_color, (self.radius, self.radius), self.radius,
+                           self.border_thickness)  #
         # 羽化护盾的。让效果更明显
         # self.feather(self.image, self.radius, self.shield_color, self.border_thickness, self.feather_radius)
-
+        self.rect = self.image.get_rect()
+        # self.rect.center = parent.rect.center
         self.update()
 
     """

@@ -61,7 +61,7 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
             self.shield = None
 
     def center_ship(self):
-        """将飞船放在屏幕底部的中央"""
+        """将飞船放在屏幕底部的中央，且向上15"""
         self.rect.midbottom = (self.screen_rect.midbottom[0], self.screen_rect.midbottom[1] - 15)
         self.x = float(self.rect.x)
 
