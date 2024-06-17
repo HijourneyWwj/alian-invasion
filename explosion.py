@@ -23,6 +23,7 @@ class Explosion(pygame.sprite.Sprite):
         if current_time - self.start_time > 200:  # 爆炸效果持续200毫秒
             self.kill()  # 移除爆炸精灵
             if self.explosion_type == 1: # 1 为飞船爆炸，0 为子弹爆炸
+                # self.ship.deactivate_shield()
                 sleep(0.5)  # 画面暂停 0.5 秒
                 if self.stats.ships_left > 0:
                     self.ship.show()

@@ -13,7 +13,7 @@ class Alien(Sprite):
         self.alien_type = alien_type
 
         # 初始化护盾
-        self.boss_shield_color = (255, 0, 0, 64)  # 红色半透明护盾
+        self.boss_shield_color = (255, 0, 0,64)  # 红色半透明护盾 (255, 0, 0, 64)
         self.boss_blood = self.settings.boss_blood  # 每次初始化boss的血量
         self.shield = None
 
@@ -31,6 +31,7 @@ class Alien(Sprite):
 
             # 初始化护盾
             self.activate_shield()
+            self.shield.visible = True
 
         else:
             self.image = pygame.image.load('images/new_alien.png').convert_alpha()
@@ -47,6 +48,7 @@ class Alien(Sprite):
     def activate_shield(self):
         """激活护盾"""
         self.shield = Shield(self, self.boss_shield_color, self.boss_blood)  # 传入boss的护盾色，血量等
+        self.shield.shield_owner = "boss"
         self.shield.add(self.ai_game.shields)
 
 
@@ -67,6 +69,6 @@ class Alien(Sprite):
         if self.settings.game_status:  # 当 game_status 的状态是true 进行中时，外星人才向右运动
             self.x += self.settings.alien_speed * self.settings.fleet_direction
             self.rect.x = self.x
-        # 更新护盾的位置
-        if self.shield:
+        # 随着 boss 的位置更新，更新护盾的位置
+        if self.ai_game.stats.level % 5 == 0 and self.shield:
             self.shield.update()

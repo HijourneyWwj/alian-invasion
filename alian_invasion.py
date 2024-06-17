@@ -4,6 +4,7 @@ from time import sleep
 import pygame  # 游戏开发的库
 import random
 import math
+import numpy as np
 
 import alien
 from settings import settings
@@ -25,6 +26,7 @@ class AlienInvasion:
     def __init__(self):
         """初始化游戏并创建游戏资源"""
         pygame.init()
+        pygame.surfarray.use_arraytype('numpy')  # 确保使用 numpy array
         self.clock = pygame.time.Clock()
         self.settings = settings()  # 创建一个settings的实例
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
@@ -32,6 +34,7 @@ class AlienInvasion:
         self.stats = GameStats(self)  # 创建一个用于存储游戏统计信息的实例
         self.sb = Scoreboard(self)
         self.ship = Ship(self)  # 此处的self，指的是AlienInvasion这个类的一个对象实例
+        # self.ship.ship_use = "shoot"
         self.bullets = pygame.sprite.Group()  # 创建一个Group类下的实例
         self.aliens = pygame.sprite.Group()  # 创建一个Group类下的实例
         self.explosions = pygame.sprite.Group()  # 创建一个Group类下的实例，储存爆炸图片编组
@@ -188,6 +191,9 @@ class AlienInvasion:
     def start_new_level(self):
         self.stats.level += 1  # 游戏关卡+1，改变数值后，还需要调用方法更新图像
         self.bullets.empty()  # 清空子弹
+        for shield in self.shields.copy():
+            if shield.shield_owner == "boss": #在boss 关卡，过关后，仅删除boss的护盾
+                self.shields.remove(shield)
         self._create_fleet()  # 创建新的飞船队列
         self.settings.increase_speed()  # 游戏提速
         self.sb._prep_level()  # 渲染当前等级
@@ -270,40 +276,38 @@ class AlienInvasion:
 
     def _create_fleet(self):
         """创建一个外星舰队"""
-        """每5的倍数关卡为boss关，加载boss外星人"""
-        if self.stats.level % 5 == 0:
-            alien_type = "boss"
-            alien = Alien(self, alien_type)
-            alien_width, alien_height = alien.rect.size
-            available_space_x = self.settings.screen_width - alien_width
-            number_aliens_x = available_space_x // (2 * alien_width)
-            available_space_y = self.settings.screen_height - alien_height
-            number_rows = available_space_y // alien_height
+        if self.stats.level % 5 == 0:  #如果是boss关卡，创建boss
+            self._create_boss()
         else:
-            alien_type = "alien"
-            alien = Alien(self,alien_type)  # 创建一个外星人
-            alien_width, alien_height = alien.rect.size
-            available_space_x = self.settings.screen_width - alien_width
-            number_aliens_x = available_space_x // (2 * alien_width)
-            available_space_y = self.settings.screen_height - 3 * alien_height
-            number_rows = available_space_y // (2 * alien_height)
+            self._create_alien_fleet()   #如果是普通关卡，创建alien队伍
+
+    def _create_boss(self):
+        boss = Alien(self, "boss")
+        boss.x = self.settings.screen_width / 2
+        boss.rect.x = boss.x
+        boss.rect.y = 30
+        self.aliens.add(boss)
+
+    def _create_alien_fleet(self):
+        temp_alien = Alien(self, "alien")  # 创建一个外星人，用于计算位置
+        alien_width, alien_height = temp_alien.rect.size
+        temp_alien.kill()  # 删除临时的外星人实例
+        available_space_x = self.settings.screen_width - alien_width
+        number_aliens_x = available_space_x // (2 * alien_width)
+        available_space_y = self.settings.screen_height - 3 * alien_height
+        number_rows = available_space_y // (2 * alien_height)
+
         for row_number in range(number_rows):
             for alien_number in range(number_aliens_x):
-                self._create_alien(alien_number, row_number,alien_type)
+                self._create_alien(alien_number, row_number)
 
-    def _create_alien(self, alien_number, row_number,alien_type):
+    def _create_alien(self, alien_number, row_number):
         """创建一个外星人并且放在当前行"""
-        alien = Alien(self,alien_type)
+        alien = Alien(self, "alien")
         alien_width, alien_height = alien.rect.size
-        """boss关卡，boss的位置不同"""
-        if self.stats.level % 5 == 0:  # 是否为boss关卡
-            alien.x = self.settings.screen_width / 2
-            alien.rect.x = alien.x
-            alien.rect.y = 30
-        else:
-            alien.x = alien_width + 2 * alien_width * alien_number
-            alien.rect.x = alien.x
-            alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
+        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         self.aliens.add(alien)
 
     def _update_aliens(self):
@@ -331,10 +335,12 @@ class AlienInvasion:
             self.sb._prep_score_ships()  # 更新剩余飞船
             if self.stats.ships_left > 0:  # 仅在飞船数量大于 0 时重置游戏
                 self._reset_ai_game()  # 调用重置游戏的方法
+                self.ship.activate_shield()  #激活护盾
         if self.stats.ships_left == 0:
             self.game_active = False
             pygame.mouse.set_visible(True)  # 游戏开始时隐藏鼠标，减少对游戏干扰
             self.ship.hide()
+            self.ship.deactivate_shield()  #取消护盾
 
     def _check_fleet_edges(self):
         """在有外星人到达边缘时采取相应的措施"""
@@ -360,6 +366,7 @@ class AlienInvasion:
     def _reset_ai_game(self):  # 重置游戏
         self.aliens.empty()  # 清空外星人列表
         self.bullets.empty()  # 清空子弹列表
+        self.shields.empty() #清空护盾
         self._create_fleet()  # 创建一个新的外星舰队
         self.ship.center_ship()  # 将飞船放在屏幕底部的中央
         self.ship.ship_blood = self.settings.ship_blood
