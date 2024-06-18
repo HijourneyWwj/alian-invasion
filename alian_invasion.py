@@ -172,7 +172,7 @@ class AlienInvasion:
             if collisions:
                 for collided_aliens in collisions.values():
                     for alien in collided_aliens:
-                        explosion = Explosion(self, alien.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
+                        explosion = Explosion(self, alien.rect.center, "alien")  # 在外星人的位置创建一个爆炸实例
                         self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
                     self.stats.score += self.settings.alien_points * len(
                         collided_aliens)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
@@ -200,7 +200,7 @@ class AlienInvasion:
                     # print(boss.boss_blood)
                 else:
                     boss.kill()
-                    explosion = Explosion(self, boss.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
+                    explosion = Explosion(self, boss.rect.center, "boss")  # 在外星人的位置创建一个爆炸实例
                     self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
                     self.stats.score += self.settings.boss_points
                     self.sound.play_music("boss_explosion")
@@ -366,7 +366,7 @@ class AlienInvasion:
 
     # 测试爆炸
     def _ship_explosion(self):
-        explosion = Explosion(self, self.ship.rect.center, 1)  # 创建一个爆炸实例
+        explosion = Explosion(self, self.ship.rect.center, "ship")  # 创建一个爆炸实例
         self.explosions.add(explosion)  # 将爆炸实例添加到类中，在画面中自动显示
         self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
