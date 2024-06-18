@@ -297,7 +297,6 @@ class AlienInvasion:
                 alien_center = pygame.Vector2(alien.rect.center)
                 direction_vector = ship_center - alien_center
                 direction_vector_for_alien = direction_vector.normalize()
-
                 new_bullet = Bullet(self, "alien", alien.rect, direction_vector_for_alien)
                 self.bullets.add(new_bullet)
                 self.sound.play_music("alien_shoot")
@@ -410,7 +409,6 @@ class AlienInvasion:
         self._create_fleet()  # 创建一个新的外星舰队
         self.ship.center_ship()  # 将飞船放在屏幕底部的中央
         self.ship.ship_blood = self.settings.ship_blood
-
 
 if __name__ == '__main__':
     # 创建游戏实例并运行游戏

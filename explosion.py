@@ -19,15 +19,15 @@ class Explosion(pygame.sprite.Sprite):
         # self.image = pygame.image.load(explosion_image_path).convert_alpha()
         # self.rect = self.image.get_rect(center=center)
         # self.start_time = pygame.time.get_ticks()
-
+        self.explosion_type = explosion_type  # 1 为飞船爆炸，0 为 boss 爆炸
         self._initialize_explosion()
         self.rect = self.image.get_rect(center=self.center)
         self.start_time = pygame.time.get_ticks()
-        self.explosion_type = explosion_type  # 1 为飞船爆炸，0 为 boss 爆炸
+
 
     def _initialize_explosion(self):
         # 是否为外星人 boss 关卡
-        if self.ai_game.stats.level % self.ai_game.settings.boss_level == 0:
+        if self.explosion_type == "boss":
             # 获取爆炸图片的路径
             explosion_image_path = os.path.join(os.path.dirname(__file__), "images/boss_explosion.png")
             # 加载爆炸图片并处理透明度
@@ -40,7 +40,11 @@ class Explosion(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
+        print("current_time",current_time)
+        print("start_time",self.start_time)
+
         if current_time - self.start_time > 200:  # 爆炸效果持续200毫秒
+            print(111)
             self.kill()  # 移除爆炸精灵
             if self.explosion_type == "ship" :
                 # self.ship.deactivate_shield()

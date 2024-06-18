@@ -1,6 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
 from shield import Shield
+from health_bar import HealthBar
 
 
 class Ship(Sprite):  #继承 Sprite 以生成编组
@@ -17,6 +18,7 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.rect = self.image.get_rect()
         self.rect.midbottom = (self.screen_rect.midbottom[0], self.screen_rect.midbottom[1] - 15)
         self.x = float(self.rect.x)  # 存储飞船的X浮点数
+        self.y = float(self.rect.y)  # 存储飞船的X浮点数
         self.moving_right = False # 移动标志：判断飞船是否需要向右移动
         self.moving_left = False
         self.hidden = False  # 是否隐藏飞船的标志
@@ -30,11 +32,16 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.last_hit_time = 0  # 上一次受到伤害的时间
         # self.ship_use = ""
 
+        # ship 血条
+        self.ship_health_bar = HealthBar(self.screen, self.x, self.y,50, 5, self.settings.ship_blood, (255, 0, 0))
+        self.ship_health_bar.draw()
+
 
     def blitme(self):
         """在指定位置绘制飞船"""
         if not self.hidden:
             self.screen.blit(self.image, (self.rect.x, self.rect.y))
+            self.ship_health_bar.update_health(self.ship_blood)
             if self.shield and not self.hidden and self.is_fully_visible():
                 self.shield.visible = True
                 self.shield.update()
@@ -50,14 +57,6 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
                 self.x -= self.settings.ship_speed
             # 使用self.x的值更新rect的值
             self.rect.x = self.x
-
-            # # 更新护盾位置
-            # # if self.ship_use == "shoot":
-            # if self.shield and not self.hidden:
-            #     self.shield.visible = True
-            #     self.shield.update()
-            # else:
-            #     self.shield.visible = False
 
 
     def activate_shield(self):
