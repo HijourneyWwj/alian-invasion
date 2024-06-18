@@ -62,7 +62,6 @@ class AlienInvasion:
             self._update_screen()
             self.clock.tick(60)  # 设置游戏帧率为60，pygame会尽可能确保循环每秒运行60次
 
-
     def _check_events(self):  # 带下划线的方法约定俗成为私密方法，只在指定的类里被使用，其他类不用
         """响应按键和鼠标事件"""
         for event in pygame.event.get():
@@ -94,12 +93,12 @@ class AlienInvasion:
             self.sound.play_music("click_button")
 
     def _start_game(self):  # 开始游戏并创建一系列资源，仅在游戏确认界面，鼠标点击play或这按键按p时启动
-        self.stats.reset_stats()  #重置游戏数据
+        self.stats.reset_stats()  # 重置游戏数据
         self.game_active = True  # 游戏活跃状态为真
         self._reset_ai_game()  # 清空外星人和子弹，并重新绘制飞船和外星人位置
         pygame.mouse.set_visible(False)  # 隐藏鼠标，减少对游戏干扰
-        self.settings.initialize_dynamic_settings() #初始化设置里的动态项
-        self.settings.game_status = True #设置的游戏状态为真
+        self.settings.initialize_dynamic_settings()  # 初始化设置里的动态项
+        self.settings.game_status = True  # 设置的游戏状态为真
         self.sb._prep_score()  # 重新绘制得分（背后的逻辑是：先更新/重置game_stats里的score，再用_prep_score（）方法把socre绘制成图像，再当主程序的screen_update方法运行时，调用show_score方法展示在屏幕上）
         self.sb._prep_level()  # 重新绘制等级
         self.sb._prep_score_ships()  # 绘制分数板块的剩余飞船编组
@@ -145,10 +144,10 @@ class AlienInvasion:
 
     def _update_bullets(self):
         """更新子弹的位置，并删除已消失的子弹"""
-        self.bullets.update()   # 更新子弹位置
+        self.bullets.update()  # 更新子弹位置
         # 检查子弹是否已经离开屏幕，离开则删除子弹
         for bullet in self.bullets.copy():  # python 限制循环内的数组不能改变长度，所以需要使用副本做判断，再通过副本的信息匹配到原始数据做删除
-            if bullet.rect.bottom <= 0 or bullet.rect.top >= self.settings.screen_height:  #前者判断ship的子弹超过屏幕顶部，后者判断alien的子弹超过屏幕底部
+            if bullet.rect.bottom <= 0 or bullet.rect.top >= self.settings.screen_height:  # 前者判断ship的子弹超过屏幕顶部，后者判断alien的子弹超过屏幕底部
                 self.bullets.remove(bullet)
             # print(len(self.bullets)) #检查是否删除了子弹
         self._check_collision()
@@ -160,40 +159,87 @@ class AlienInvasion:
         alien_bullets = [bullet for bullet in self.bullets if bullet.shooter == 'alien' or bullet.shooter == 'boss']
         alien_bullets_group = pygame.sprite.Group(alien_bullets)
         self._check_shipbullet_alien_collision(ship_bullets_group)
-        self._check_alienbullet_ship_collision(alien_bullets_group)
+        self._check_alien_or_alienbullet_to_ship_collision(alien_bullets_group)
 
-    def _check_shipbullet_alien_collision(self,ship_bullets_group):
+    def _check_shipbullet_alien_collision(self, ship_bullets_group):
         """判断飞船子弹和外星人的碰撞"""
-        collisions = pygame.sprite.groupcollide(ship_bullets_group, self.aliens, True, True, pygame.sprite.collide_mask)
-        if collisions:
-            for collided_aliens in collisions.values():
-                for alien in collided_aliens:
-                    explosion = Explosion(self, alien.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
-                    self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
-                self.stats.score += self.settings.alien_points * len(
-                    collided_aliens)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
-                self.sound.play_music("explosion")
-            self.sb._prep_score()
-            self.sb.check_high_score()
+        #判断boss 关卡，boss关卡有护盾计算
+        if self.stats.level % self.settings.boss_level == 0:  # boss 关卡
+            self._check_boss_blood(ship_bullets_group)
+        else:  # 非boss 关卡
+            collisions = pygame.sprite.groupcollide(ship_bullets_group, self.aliens, True, True,
+                                                    pygame.sprite.collide_mask)
+            if collisions:
+                for collided_aliens in collisions.values():
+                    for alien in collided_aliens:
+                        explosion = Explosion(self, alien.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
+                        self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
+                    self.stats.score += self.settings.alien_points * len(
+                        collided_aliens)  # 更新分数，当子弹同时消除多个外星人时，需要乘以aliens的数，即第一个键值对的值的list长度
+                    self.sound.play_music("explosion")
+                self.sb._prep_score()
+                self.sb.check_high_score()
         if not self.aliens:
             # 如果所有的外星人队列都被消灭了，就删除现有的子弹并创建一个新的外星舰队
             self.start_new_level()
 
-    def _check_alienbullet_ship_collision(self,alien_bullets_group):
+
+    def _check_boss_blood(self,ship_bullets_group):
+        boss_aliens = [alien for alien in self.aliens if alien.alien_type == 'boss'] #boss关卡只有一只boss alien
+        boss = boss_aliens[0] #获取到对应的boss对象,并用于后续的计算
+        current_time = pygame.time.get_ticks()  # 获取当前时间
+        if current_time - boss.last_hit_time > boss.invincibility_duration:
+            boss_collisions = pygame.sprite.groupcollide(ship_bullets_group, self.aliens,True, False,
+                                                          pygame.sprite.collide_mask)
+            if boss_collisions:
+                # 更新最后一次碰撞时间
+                boss.last_hit_time = current_time
+                # 判断飞船血量，用血量抵挡一次伤害，直到血量为0。血量只抵挡子弹和飞船的碰撞伤害，若外星人到达屏幕底部则直接爆炸
+                if boss.boss_blood > 1:
+                    boss.boss_blood -= 1
+                    # print(boss.boss_blood)
+                else:
+                    boss.kill()
+                    explosion = Explosion(self, boss.rect.center, 0)  # 在外星人的位置创建一个爆炸实例
+                    self.explosions.add(explosion)  # 实例添加到爆炸类里，自动执行爆炸动画
+                    self.stats.score += self.settings.boss_points
+                    self.sound.play_music("boss_explosion")
+                    self.sb._prep_score()
+                    self.sb.check_high_score()
+
+    def _check_alien_or_alienbullet_to_ship_collision(self, alien_or_alien_bullets_group):
         """判断外星人子弹和飞船的碰撞"""
-        ship_collision = pygame.sprite.spritecollideany(self.ship, alien_bullets_group, pygame.sprite.collide_mask)
-        if ship_collision:
-            self._ship_explosion()  # 添加爆炸效果
-            self.ship.deactivate_shield()
-            self._ship_hit()  # 更新剩余飞船数
+        current_time = pygame.time.get_ticks()  # 获取当前时间
+        if current_time - self.ship.last_hit_time > self.ship.invincibility_duration:
+            ship_collisions = pygame.sprite.spritecollide(self.ship, alien_or_alien_bullets_group, True,
+                                                          pygame.sprite.collide_mask)
+            if ship_collisions:
+                # 更新最后一次碰撞时间
+                self.ship.last_hit_time = current_time
+                # 判断飞船血量，用血量抵挡一次伤害，直到血量为0。血量只抵挡子弹和飞船的碰撞伤害，若外星人到达屏幕底部则直接爆炸
+                if self.ship.ship_blood > 1:
+                    self.ship.ship_blood -= 1
+                else:
+                    self._ship_explosion()  # 添加爆炸效果
+                    self.ship.deactivate_shield()  # 飞船护盾消失
+                    self._ship_hit()  # 更新剩余飞船数
+
+    def _check_aliens_bottom(self):
+        """检查是否有外星人到达了屏幕的下边缘,是则飞船爆炸"""
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= self.settings.screen_height:
+                self._ship_explosion()  # 添加爆炸效果
+                self._ship_hit()
+                break
 
     def start_new_level(self):
         self.stats.level += 1  # 游戏关卡+1，改变数值后，还需要调用方法更新图像
         self.bullets.empty()  # 清空子弹
         for shield in self.shields.copy():
-            if shield.shield_owner == "boss": #在boss 关卡，过关后，仅删除boss的护盾
+            if shield.shield_owner == "boss":  # 在boss 关卡，过关后，仅删除boss的护盾
                 self.shields.remove(shield)
         self._create_fleet()  # 创建新的飞船队列
+        self.ship.ship_blood = self.settings.ship_blood #重置ship血量
         self.settings.increase_speed()  # 游戏提速
         self.sb._prep_level()  # 渲染当前等级
 
@@ -236,7 +282,7 @@ class AlienInvasion:
         ship_bullets_group = pygame.sprite.Group(ship_bullets)
         direction_vector_for_ship = pygame.Vector2(0, 1)  # 子弹从飞船向外星人的向量是个默认值
         if len(ship_bullets_group) < self.settings.ship_bullet_allowed:
-            new_bullet = Bullet(self, "ship", self.ship.rect,direction_vector_for_ship)
+            new_bullet = Bullet(self, "ship", self.ship.rect, direction_vector_for_ship)
             self.bullets.add(new_bullet)
             self.sound.play_music("ship_shoot")
 
@@ -247,13 +293,12 @@ class AlienInvasion:
             num_aliens_to_shoot = min(self.settings.alien_shoot_count, len(self.aliens.sprites()))
             chosen_aliens = random.sample(self.aliens.sprites(), num_aliens_to_shoot)
             for alien in chosen_aliens:
-
                 ship_center = pygame.Vector2(self.ship.rect.center)
                 alien_center = pygame.Vector2(alien.rect.center)
                 direction_vector = ship_center - alien_center
                 direction_vector_for_alien = direction_vector.normalize()
 
-                new_bullet = Bullet(self, "alien", alien.rect,direction_vector_for_alien)
+                new_bullet = Bullet(self, "alien", alien.rect, direction_vector_for_alien)
                 self.bullets.add(new_bullet)
                 self.sound.play_music("alien_shoot")
 
@@ -271,16 +316,15 @@ class AlienInvasion:
             self.bullets.add(new_bullet)
         self.sound.play_music("boss_shoot")
 
-
-
     def _create_fleet(self):
         """创建一个外星舰队"""
-        if self.stats.level % self.settings.boss_level == 0:  #如果是boss关卡，创建boss
+        if self.stats.level % self.settings.boss_level == 0:  # 如果是boss关卡，创建boss
             self._create_boss()
         else:
-            self._create_alien_fleet()   #如果是普通关卡，创建alien队伍
+            self._create_alien_fleet()  # 如果是普通关卡，创建alien队伍
 
     def _create_boss(self):
+        """在boss关卡，创建boss"""
         boss = Alien(self, "boss")
         boss.x = self.settings.screen_width / 2
         boss.rect.x = boss.x
@@ -288,6 +332,7 @@ class AlienInvasion:
         self.aliens.add(boss)
 
     def _create_alien_fleet(self):
+        """在非boss关卡，创建外星人舰队"""
         temp_alien = Alien(self, "alien")  # 创建一个外星人，用于计算位置
         alien_width, alien_height = temp_alien.rect.size
         temp_alien.kill()  # 删除临时的外星人实例
@@ -314,9 +359,8 @@ class AlienInvasion:
         self._check_fleet_edges()
         self.aliens.update()  # 编组调用方法时，会让所有的外星人都执行
         # 检测外星人和飞船之间的碰撞
-        if pygame.sprite.spritecollideany(self.ship, self.aliens):  # 判断飞船和外星舰队是否有“碰撞”
-            self._ship_explosion()  # 添加爆炸效果
-            self._ship_hit()  # 更新剩余飞船数
+        # if pygame.sprite.spritecollideany(self.ship, self.aliens):  # 判断飞船和外星舰队是否有“碰撞”
+        self._check_alien_or_alienbullet_to_ship_collision(self.aliens) # 检验飞船和外星人是否有碰撞，有则更新飞船血量
         # 检查是否有外星人到达了屏幕的下边缘
         self._check_aliens_bottom()
 
@@ -327,7 +371,7 @@ class AlienInvasion:
         self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
 
-    def _ship_hit(self):   #更新剩余飞船数量
+    def _ship_hit(self):  # 更新剩余飞船数量
         """只在飞船爆炸时，使用此方法，三种情况飞船爆炸：
         1. 飞船被外星人子弹击中
         2. 飞船和外星人碰撞
@@ -339,11 +383,10 @@ class AlienInvasion:
                 self._reset_ai_game()  # 调用重置游戏的方法
                 # self.ship.activate_shield()  #激活护盾
         if self.stats.ships_left == 0:
-            self.game_active = False  #游戏暂停
+            self.game_active = False  # 游戏暂停
             pygame.mouse.set_visible(True)  # 显示鼠标，可点击是否重新开始游戏
             self.ship.hide()
             self.ship.deactivate_shield()
-
 
     def _check_fleet_edges(self):
         """在有外星人到达边缘时采取相应的措施"""
@@ -358,15 +401,8 @@ class AlienInvasion:
             alien.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
 
-    def _check_aliens_bottom(self):
-        """检查是否有外星人到达了屏幕的下边缘,则与触碰飞船同等处理"""
-        for alien in self.aliens.sprites():
-            if alien.rect.bottom >= self.settings.screen_height:
-                self._ship_explosion()  # 添加爆炸效果
-                self._ship_hit()
-                break
-
     """在首次开始游戏，或者飞船剩余寿命-1时，重置游戏重置游戏"""
+
     def _reset_ai_game(self):  # 重置游戏
         self.aliens.empty()  # 清空外星人列表
         self.bullets.empty()  # 清空子弹列表

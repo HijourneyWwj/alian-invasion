@@ -13,7 +13,7 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.settings = ai_game.settings
         self.screen_rect = ai_game.screen.get_rect()
         self.ship_blood = self.settings.ship_blood # 初始化ship 的血量
-        self.image = pygame.image.load('images/new_ship.png')  # 加载飞船图像并获取其外接矩形
+        self.image = pygame.image.load('images/new_ship3.png')  # 加载飞船图像并获取其外接矩形
         self.rect = self.image.get_rect()
         self.rect.midbottom = (self.screen_rect.midbottom[0], self.screen_rect.midbottom[1] - 15)
         self.x = float(self.rect.x)  # 存储飞船的X浮点数
@@ -21,7 +21,13 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.moving_left = False
         self.hidden = False  # 是否隐藏飞船的标志
         self.shield = None
-        self.shield_color = (255,255,255,64)
+        self.shield_color = (255,255,255,64)  # 护盾的颜色
+        self.border_thickness = 20  # 护盾的厚度  20
+        self.feather_radius = 12  # 护盾的羽化半径 12
+
+        # 无敌时间，用于子弹碰撞时避免因为帧刷新的原因重复计算伤害
+        self.invincibility_duration = 100  # 在500毫秒内，ship无敌。
+        self.last_hit_time = 0  # 上一次受到伤害的时间
         # self.ship_use = ""
 
 
@@ -57,7 +63,7 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
     def activate_shield(self):
         """激活护盾"""
         # if self.ship_use == "shoot":
-        self.shield = Shield(self,self.shield_color,self.ship_blood) #传入ship的护盾色，血量等
+        self.shield = Shield(self,self.shield_color,self.ship_blood,self.border_thickness,self.feather_radius) #传入ship的护盾色，血量等.
         self.shield.shield_owner = "ship"
         self.shield.add(self.ai_game.shields)
 

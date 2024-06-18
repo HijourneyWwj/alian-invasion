@@ -14,8 +14,7 @@ class Sound:
         self.bgm_sound.set_volume(0.8)
         self.alien_shoot_sound.set_volume(0.1)
         self.boss_shoot_sound.set_volume(0.8)
-
-
+        self.boss_explosion_sound.set_volume(1)
 
     def play_music(self,music):
         if music == "ship_shoot":
@@ -30,6 +29,8 @@ class Sound:
             self.alien_shoot_sound.play()
         if music == "boss_shoot":
             self.boss_shoot_sound.play()
+        if music == "boss_explosion":
+            self.boss_explosion_sound.play()
 
 
     def _creat_sound(self):
@@ -39,5 +40,6 @@ class Sound:
         self.click_button_sound = pygame.mixer.Sound('sound/click_button.mp3')
         self.alien_shoot_sound = pygame.mixer.Sound('sound/alien_shoot_voice.mp3')
         self.boss_shoot_sound = pygame.mixer.Sound('sound/boss_shoot_voice.mp3')
+        self.boss_explosion_sound = pygame.mixer.Sound('sound/boss_explosion_sound.mp3')
 
 

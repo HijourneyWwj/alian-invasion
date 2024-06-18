@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite #使用sprite可以将游戏中相关的元素编组，进而同时操作编组中的所有元素
+from feather import feather
 
 class Bullet(Sprite): #bullet 是 Spritte（精灵）的子类
     # 管理飞船所发射的子弹的类
@@ -12,7 +13,7 @@ class Bullet(Sprite): #bullet 是 Spritte（精灵）的子类
         self.shooter = shooter
         self.sprite_rect = sprite_rect
         self.check_shooter()
-        self.direction_vector = direction_vector
+        self.direction_vector = direction_vector.normalize()
         # 创建mask
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -61,7 +62,6 @@ class Bullet(Sprite): #bullet 是 Spritte（精灵）的子类
         pygame.draw.circle(self.image, self.color,
                            (self.settings.alien_bullet_width / 2, self.settings.alien_bullet_height / 2),
                            self.settings.alien_bullet_height / 2)
-        # self._calculate_alien_bullet_direction()  # 计算子弹从外星人到飞船的方向向量
         self.speed_factor = self.settings.ship_bullet_speed  # 外星人子弹向下移动,移动速度和飞船的保持一致
 
     def _boss_bullet(self):
