@@ -24,7 +24,7 @@ class Alien(Sprite):
 
     def _initialize_alien(self):
         # 是否为外星人 boss 关卡,默认为假
-        if self.ai_game.stats.level % 5 == 0:
+        if self.ai_game.stats.level % self.settings.boss_level == 0:
             self.image = pygame.image.load('images/new_boss.png').convert_alpha()  # Load image with transparency
             self.rect = self.image.get_rect()
             self.alien_boss = True
@@ -70,5 +70,5 @@ class Alien(Sprite):
             self.x += self.settings.alien_speed * self.settings.fleet_direction
             self.rect.x = self.x
         # 随着 boss 的位置更新，更新护盾的位置
-        if self.ai_game.stats.level % 5 == 0 and self.shield:
+        if self.ai_game.stats.level % self.settings.boss_level == 0 and self.shield:
             self.shield.update()

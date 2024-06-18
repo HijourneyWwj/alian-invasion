@@ -29,9 +29,15 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         """在指定位置绘制飞船"""
         if not self.hidden:
             self.screen.blit(self.image, (self.rect.x, self.rect.y))
+            if self.shield and not self.hidden and self.is_fully_visible():
+                self.shield.visible = True
+                self.shield.update()
+            else:
+                if self.shield:
+                    self.shield.visible = False
 
     def update(self):
-        if self.settings.game_status:  # 当 game_status 的状态是true 进行中时，飞船才能左右移动
+        if self.settings.game_status and self.hidden == False:  # 当 game_status 的状态是true 进行中时，飞船才能左右移动
             if self.moving_right and self.rect.right < self.screen_rect.right:
                 self.x += self.settings.ship_speed
             if self.moving_left and self.rect.left > 0:
@@ -39,13 +45,14 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
             # 使用self.x的值更新rect的值
             self.rect.x = self.x
 
-        # 更新护盾位置
-        # if self.ship_use == "shoot":
-        if self.shield and not self.hidden :
-            self.shield.visible = True
-            self.shield.update()
-        else:
-            self.shield.visible = False
+            # # 更新护盾位置
+            # # if self.ship_use == "shoot":
+            # if self.shield and not self.hidden:
+            #     self.shield.visible = True
+            #     self.shield.update()
+            # else:
+            #     self.shield.visible = False
+
 
     def activate_shield(self):
         """激活护盾"""
@@ -72,3 +79,9 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
     def show(self):
         """显示飞船"""
         self.hidden = False
+
+
+    def is_fully_visible(self):
+        """检查飞船是否完全可见"""
+        return self.rect.left >= 0 and self.rect.right <= self.screen_rect.right and \
+               self.rect.top >= 0 and self.rect.bottom <= self.screen_rect.bottom

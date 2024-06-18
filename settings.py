@@ -23,6 +23,7 @@ class settings:
         self.alien_bullet_width = 10  # 3
         self.alien_bullet_height = 10  # 15
         self.alien_bullet_color = (70,239,232)
+        self.boss_level = 2 #能被此整出的关卡，为boss关卡
 
         # boss 设置
         self.boss_bullet_width = 20

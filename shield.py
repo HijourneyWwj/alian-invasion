@@ -25,8 +25,7 @@ class Shield(Sprite):
         #创建一个全透明的圆
         self.radius = max(parent.rect.width, parent.rect.height) // 2 + 10
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, self.shield_color, (self.radius, self.radius), self.radius,
-                           self.border_thickness)  #
+        pygame.draw.circle(self.image, self.shield_color, (self.radius, self.radius), self.radius)  #,self.border_thickness
         # 羽化护盾的。让效果更明显
         # self.feather(self.image, self.radius, self.shield_color, self.border_thickness, self.feather_radius)
         self.rect = self.image.get_rect()
@@ -40,10 +39,10 @@ class Shield(Sprite):
     -->在遇到上伤害时扣减护盾值（take_damage）
     -->护盾值为0时删除护盾（self.kill）
     """
-    def draw(self):
-        """绘制护盾"""
-        if self.visible:
-            self.screen.blit(self.image, self.rect)
+    # def draw(self):
+    #     """绘制护盾"""
+    #     if self.visible:
+    #         self.screen.blit(self.image, self.rect)
 
     def update(self):
         """更新护盾位置"""

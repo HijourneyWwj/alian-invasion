@@ -27,4 +27,5 @@ class Explosion(pygame.sprite.Sprite):
                 sleep(0.5)  # 画面暂停 0.5 秒
                 if self.stats.ships_left > 0:
                     self.ship.show()
+                    self.ship.activate_shield()  #激活护盾
 

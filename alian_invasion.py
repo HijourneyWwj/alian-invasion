@@ -58,7 +58,6 @@ class AlienInvasion:
                 self.ship.update()
                 self._update_bullets()
                 self._update_aliens()
-                self.shields.update()
             # 每次启动都重新绘制屏幕
             self._update_screen()
             self.clock.tick(60)  # 设置游戏帧率为60，pygame会尽可能确保循环每秒运行60次
@@ -78,8 +77,7 @@ class AlienInvasion:
                 self._check_click_button(mouse_pos)
             # alien shoot 事件触发后
             elif event.type == self.alien_bullet_timer and self.settings.game_status:  # 游戏暂停时外星人停止发射子弹
-                # self._fire_bullet("alien")
-                if self.stats.level % 5 == 0:  # 如果时boss 关卡，发射boss的子弹
+                if self.stats.level % self.settings.boss_level == 0:  # 如果时boss 关卡，发射boss的子弹
                     self._fire_bullet("boss")
                 else:
                     self._fire_bullet("alien")
@@ -88,20 +86,20 @@ class AlienInvasion:
         """在玩家单击 Play 按钮时开始新游戏"""
         if not self.game_active and self.play_button.rect.collidepoint(
                 mouse_pos):  # 检查鼠标点击的位置，是否在按钮的矩形内，mouse_pos是一个（x，y）元组，记录点击的位置
-            self._start_game()  # 重置游戏信息
+            self._start_game()  # 开始游戏
             self.sound.play_music("click_button")
         """玩家点击 continue 按钮时恢复游戏"""
         if self.game_active and self.continue_button.rect.collidepoint(mouse_pos):
             self._stop_or_continue_game(False)
             self.sound.play_music("click_button")
 
-    def _start_game(self):
-        self.stats.reset_stats()
-        self.game_active = True
+    def _start_game(self):  # 开始游戏并创建一系列资源，仅在游戏确认界面，鼠标点击play或这按键按p时启动
+        self.stats.reset_stats()  #重置游戏数据
+        self.game_active = True  # 游戏活跃状态为真
         self._reset_ai_game()  # 清空外星人和子弹，并重新绘制飞船和外星人位置
-        pygame.mouse.set_visible(False)  # 游戏开始时隐藏鼠标，减少对游戏干扰
-        self.settings.initialize_dynamic_settings()
-        self.settings.game_status = True
+        pygame.mouse.set_visible(False)  # 隐藏鼠标，减少对游戏干扰
+        self.settings.initialize_dynamic_settings() #初始化设置里的动态项
+        self.settings.game_status = True #设置的游戏状态为真
         self.sb._prep_score()  # 重新绘制得分（背后的逻辑是：先更新/重置game_stats里的score，再用_prep_score（）方法把socre绘制成图像，再当主程序的screen_update方法运行时，调用show_score方法展示在屏幕上）
         self.sb._prep_level()  # 重新绘制等级
         self.sb._prep_score_ships()  # 绘制分数板块的剩余飞船编组
@@ -186,6 +184,7 @@ class AlienInvasion:
         ship_collision = pygame.sprite.spritecollideany(self.ship, alien_bullets_group, pygame.sprite.collide_mask)
         if ship_collision:
             self._ship_explosion()  # 添加爆炸效果
+            self.ship.deactivate_shield()
             self._ship_hit()  # 更新剩余飞船数
 
     def start_new_level(self):
@@ -276,7 +275,7 @@ class AlienInvasion:
 
     def _create_fleet(self):
         """创建一个外星舰队"""
-        if self.stats.level % 5 == 0:  #如果是boss关卡，创建boss
+        if self.stats.level % self.settings.boss_level == 0:  #如果是boss关卡，创建boss
             self._create_boss()
         else:
             self._create_alien_fleet()   #如果是普通关卡，创建alien队伍
@@ -328,19 +327,23 @@ class AlienInvasion:
         self.sound.play_music("explosion")  # 播放爆炸音效
         self.ship.hide()  # 隐藏飞船
 
-    def _ship_hit(self):
-        """响应飞船和外星人子弹，或外星人的碰撞"""
+    def _ship_hit(self):   #更新剩余飞船数量
+        """只在飞船爆炸时，使用此方法，三种情况飞船爆炸：
+        1. 飞船被外星人子弹击中
+        2. 飞船和外星人碰撞
+        3. 外星人触达屏幕下方"""
         if self.stats.ships_left >= 1:  # 判断飞船剩余数量
             self.stats.ships_left -= 1  # 剩余飞船数量 - 1
             self.sb._prep_score_ships()  # 更新剩余飞船
             if self.stats.ships_left > 0:  # 仅在飞船数量大于 0 时重置游戏
                 self._reset_ai_game()  # 调用重置游戏的方法
-                self.ship.activate_shield()  #激活护盾
+                # self.ship.activate_shield()  #激活护盾
         if self.stats.ships_left == 0:
-            self.game_active = False
-            pygame.mouse.set_visible(True)  # 游戏开始时隐藏鼠标，减少对游戏干扰
+            self.game_active = False  #游戏暂停
+            pygame.mouse.set_visible(True)  # 显示鼠标，可点击是否重新开始游戏
             self.ship.hide()
-            self.ship.deactivate_shield()  #取消护盾
+            self.ship.deactivate_shield()
+
 
     def _check_fleet_edges(self):
         """在有外星人到达边缘时采取相应的措施"""
@@ -363,10 +366,11 @@ class AlienInvasion:
                 self._ship_hit()
                 break
 
+    """在首次开始游戏，或者飞船剩余寿命-1时，重置游戏重置游戏"""
     def _reset_ai_game(self):  # 重置游戏
         self.aliens.empty()  # 清空外星人列表
         self.bullets.empty()  # 清空子弹列表
-        self.shields.empty() #清空护盾
+        self.shields.empty()  # 需要清空护盾，否则飞船会重复绘制护盾，boss关卡也会在重复绘制。无论清空与否，左上角都会有护盾显示
         self._create_fleet()  # 创建一个新的外星舰队
         self.ship.center_ship()  # 将飞船放在屏幕底部的中央
         self.ship.ship_blood = self.settings.ship_blood
