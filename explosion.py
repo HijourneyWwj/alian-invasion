@@ -40,11 +40,7 @@ class Explosion(pygame.sprite.Sprite):
 
     def update(self):
         current_time = pygame.time.get_ticks()
-        print("current_time",current_time)
-        print("start_time",self.start_time)
-
         if current_time - self.start_time > 200:  # 爆炸效果持续200毫秒
-            print(111)
             self.kill()  # 移除爆炸精灵
             if self.explosion_type == "ship" :
                 # self.ship.deactivate_shield()

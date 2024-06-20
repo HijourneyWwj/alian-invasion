@@ -23,9 +23,16 @@ class Ship(Sprite):  #继承 Sprite 以生成编组
         self.moving_left = False
         self.hidden = False  # 是否隐藏飞船的标志
         self.shield = None
-        self.shield_color = (255,255,255,64)  # 护盾的颜色
+        self.shield_color = (255,255,255,255) # 护盾的颜色(255,255,255,64)
         self.border_thickness = 20  # 护盾的厚度  20
         self.feather_radius = 12  # 护盾的羽化半径 12
+        self.shield_attenuation = self.feather_radius / (self.ship_blood - 1) # 飞船收到伤害时，护盾羽化的衰减值
+
+
+        # 飞船/boss每次收到伤害时，护盾衰减的值。飞船血量暂时不变，因此不随游戏提速，boss需要随游戏提速变更血量和护盾衰减值
+        # blood - 1 ，以确保护盾消失后，由ship/boss自身承受最后一次伤害
+
+
 
         # 无敌时间，用于子弹碰撞时避免因为帧刷新的原因重复计算伤害
         self.invincibility_duration = 100  # 在500毫秒内，ship无敌。

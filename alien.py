@@ -12,16 +12,6 @@ class Alien(Sprite):
         self.settings = ai_game.settings
         self.alien_type = alien_type
 
-        # boss 初始化护盾
-        self.boss_shield_color = (224,57,235,64)  # 红色半透明护盾 (255, 0, 0, 64)
-        self.boss_blood = self.settings.boss_blood  # 每次初始化boss的血量
-        self.shield = None
-        self.border_thickness = 80  # boss 护盾的厚度
-        self.feather_radius = 25   # boss 护盾的羽化半径
-        # boss无敌时间，用于子弹碰撞时避免因为帧刷新的原因重复计算伤害
-        self.invincibility_duration = 100  # 在500毫秒内，ship无敌。
-        self.last_hit_time = 0  # 上一次受到伤害的时间
-
         #初始化alien
         self._initialize_alien()
 
@@ -33,6 +23,18 @@ class Alien(Sprite):
             self.image = pygame.image.load('images/new_boss.png').convert_alpha()  # Load image with transparency
             self.rect = self.image.get_rect()
             self.alien_boss = True
+
+            # boss 初始化护盾
+            self.boss_shield_color = (224, 57, 235, 0)  # 红色半透明护盾 (255, 0, 0, 64)
+            self.boss_blood = self.settings.boss_blood  # 每次初始化boss的血量
+            self.shield = None
+            self.border_thickness = 30  # boss 护盾的厚度
+            self.feather_radius = 25  # boss 护盾的羽化半径
+            self.shield_attenuation = self.feather_radius / (self.boss_blood - 1) # boss 受到伤害时，护盾羽化的衰减值
+
+            # boss无敌时间，用于子弹碰撞时避免因为帧刷新的原因重复计算伤害
+            self.invincibility_duration = 100  # 在500毫秒内，ship无敌。
+            self.last_hit_time = 0  # 上一次受到伤害的时间
 
             # 初始化护盾
             self.activate_shield()

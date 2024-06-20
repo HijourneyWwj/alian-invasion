@@ -7,7 +7,7 @@ import math
 import numpy as np
 
 import alien
-from settings import settings
+from settings import Settings
 from game_stats import GameStats
 from scoreboard import Scoreboard
 from button import Button
@@ -28,7 +28,7 @@ class AlienInvasion:
         pygame.init()
         pygame.surfarray.use_arraytype('numpy')  # 确保使用 numpy array
         self.clock = pygame.time.Clock()
-        self.settings = settings()  # 创建一个settings的实例
+        self.settings = Settings()  # 创建一个settings的实例
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
         self.stats = GameStats(self)  # 创建一个用于存储游戏统计信息的实例
@@ -185,6 +185,7 @@ class AlienInvasion:
 
 
     def _check_boss_blood(self,ship_bullets_group):
+        """计算boss的血量"""
         boss_aliens = [alien for alien in self.aliens if alien.alien_type == 'boss'] #boss关卡只有一只boss alien
         boss = boss_aliens[0] #获取到对应的boss对象,并用于后续的计算
         current_time = pygame.time.get_ticks()  # 获取当前时间
@@ -197,7 +198,11 @@ class AlienInvasion:
                 # 判断飞船血量，用血量抵挡一次伤害，直到血量为0。血量只抵挡子弹和飞船的碰撞伤害，若外星人到达屏幕底部则直接爆炸
                 if boss.boss_blood > 1:
                     boss.boss_blood -= 1
-                    # print(boss.boss_blood)
+                    """boss 使用护盾衰减机制，有性能问题，会导致页面卡顿，暂无明确解法"""
+                    # self._update_shield_feather_radius(boss)
+
+                    if boss.boss_blood == 1:  # 当血量仅有 1 时，boss 的护盾消失，由boss承受最后一次伤害
+                        boss.deactivate_shield()  # boss护盾消失
                 else:
                     boss.kill()
                     explosion = Explosion(self, boss.rect.center, "boss")  # 在外星人的位置创建一个爆炸实例
@@ -219,10 +224,17 @@ class AlienInvasion:
                 # 判断飞船血量，用血量抵挡一次伤害，直到血量为0。血量只抵挡子弹和飞船的碰撞伤害，若外星人到达屏幕底部则直接爆炸
                 if self.ship.ship_blood > 1:
                     self.ship.ship_blood -= 1
+                    self._update_shield_feather_radius(self.ship)
+                    if self.ship.ship_blood == 1:  # 当血量仅有 1 时，ship 的护盾消失，由ship承受最后一次伤害
+                        self.ship.deactivate_shield()  # 飞船护盾消失
                 else:
                     self._ship_explosion()  # 添加爆炸效果
-                    self.ship.deactivate_shield()  # 飞船护盾消失
                     self._ship_hit()  # 更新剩余飞船数
+
+    def _update_shield_feather_radius(self,parent):
+         # 每次收到伤害，飞船护盾的半径缩短一个衰减单位
+        parent.shield.feather_radius = parent.shield.feather_radius - parent.shield_attenuation + 1
+        parent.shield.update_feather()
 
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕的下边缘,是则飞船爆炸"""
@@ -233,6 +245,7 @@ class AlienInvasion:
                 break
 
     def start_new_level(self):
+        self.ship.shield.kill()
         self.stats.level += 1  # 游戏关卡+1，改变数值后，还需要调用方法更新图像
         self.bullets.empty()  # 清空子弹
         for shield in self.shields.copy():
@@ -242,6 +255,8 @@ class AlienInvasion:
         self.ship.ship_blood = self.settings.ship_blood #重置ship血量
         self.settings.increase_speed()  # 游戏提速
         self.sb._prep_level()  # 渲染当前等级
+        self.ship.feather_radius = 12 #重置ship的护盾厚度
+        self.ship.activate_shield()
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)

@@ -1,6 +1,5 @@
 import pygame
 from pygame.sprite import Sprite #使用sprite可以将游戏中相关的元素编组，进而同时操作编组中的所有元素
-from feather import feather
 
 class Bullet(Sprite): #bullet 是 Spritte（精灵）的子类
     # 管理飞船所发射的子弹的类

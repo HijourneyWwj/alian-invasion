@@ -1,4 +1,4 @@
-class settings:
+class Settings:
     def __init__(self):
         """初始化游戏的静态设置"""
         # 屏幕设置
@@ -9,13 +9,13 @@ class settings:
         # 飞船设置
         self.ship_limit = 3  # 限制飞船数量
 
+
         # ship 子弹设置
         self.ship_bullet_width = 1500  # 3
         self.ship_bullet_height = 12  # 15
         self.ship_bullet_color = (255, 165, 0)  # 原色(60, 60, 60)
         self.ship_bullet_allowed = 5  # 3
         self.ship_blood = 5  # ship 的初始血量，可以抵挡5次子弹的攻击
-        # self.ship_bullet_radius = 5  # 新增的属性，定义子弹的半径
 
         # 外星人设置
         self.fleet_drop_speed = 70  # 原始10
@@ -29,6 +29,7 @@ class settings:
         self.boss_bullet_width = 20
         self.boss_bullet_height = 20
         self.boss_bullet_color = (224, 57, 235)  # 紫色
+
 
         # 游戏节奏
         self.speedup_level = 1
@@ -52,6 +53,7 @@ class settings:
         self.alien_shoot_count = 2  # 外星人同时发射子弹的数量，随着游戏节奏的提高，数量变大
         self.boss_blood = 10  # boss 的初始血量，随着游戏等级的提高而提高，可以抵挡100次子弹的攻击
         self.boss_points = 2000
+
 
     def increase_speed(self):
         """提高速度设置的值,乘以游戏节奏"""
