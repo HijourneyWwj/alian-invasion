@@ -11,19 +11,19 @@ class Settings:
 
 
         # ship 子弹设置
-        self.ship_bullet_width = 1500  # 3
-        self.ship_bullet_height = 12  # 15
+        self.ship_bullet_width = 4  # 3
+        self.ship_bullet_height = 15  # 15
         self.ship_bullet_color = (255, 165, 0)  # 原色(60, 60, 60)
         self.ship_bullet_allowed = 5  # 3
         self.ship_blood = 5  # ship 的初始血量，可以抵挡5次子弹的攻击
 
         # 外星人设置
-        self.fleet_drop_speed = 70  # 原始10
+        self.fleet_drop_speed = 10  # 原始10
         # alien 子弹设置
         self.alien_bullet_width = 10  # 3
         self.alien_bullet_height = 10  # 15
         self.alien_bullet_color = (70, 239, 232)
-        self.boss_level = 2  # 能被此整出的关卡，为boss关卡
+        self.boss_level = 3  # 能被此整除的关卡，为boss关卡
 
         # boss 设置
         self.boss_bullet_width = 20
@@ -48,9 +48,9 @@ class Settings:
         self.alien_speed = 1.0
         self.fleet_direction = 1  # 外星人队列的易懂方向， 1 向右，-1 向左
         self.alien_points = 50  # 记分设置
-        self.alien_bullet_time_break = 1200  # 外星人发射子弹的频率，初始1.2秒，随着游戏节奏逐渐加快，每次提升20毫秒
+        self.alien_bullet_time_break = 1500  # 外星人发射子弹的频率，初始1.5秒，随着游戏节奏逐渐加快，每次提升20毫秒
         self.boss_bullet_count = 7  # boss 每次同时发射5个子弹，随着游戏节奏的提高，数量变大
-        self.alien_shoot_count = 2  # 外星人同时发射子弹的数量，随着游戏节奏的提高，数量变大
+        self.alien_shoot_count = 1  # 外星人同时发射子弹的数量，随着游戏节奏的提高，数量变大
         self.boss_blood = 10  # boss 的初始血量，随着游戏等级的提高而提高，可以抵挡100次子弹的攻击
         self.boss_points = 2000
 

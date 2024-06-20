@@ -11,6 +11,7 @@ class Alien(Sprite):
         self.screen = ai_game.screen
         self.settings = ai_game.settings
         self.alien_type = alien_type
+        self.game_level = ai_game.stats.level
 
         #初始化alien
         self._initialize_alien()
