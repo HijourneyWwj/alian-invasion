@@ -439,7 +439,7 @@ class AlienInvasion:
     def _release_special_move(self,move_type,game_level):
         special_move = SpecialMove(self, move_type,self.stats.level)
         self.special_moves.add(special_move)
-
+        self.sound.play_music("dragon_growl")  # 播放专属音效
 
 
     def _check_special_move_collision(self): #

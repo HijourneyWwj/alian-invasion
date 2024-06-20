@@ -15,6 +15,7 @@ class Sound:
         self.alien_shoot_sound.set_volume(0.1)
         self.boss_shoot_sound.set_volume(0.8)
         self.boss_explosion_sound.set_volume(1)
+        self.dragon_growl.set_volume(1)
 
     def play_music(self,music):
         if music == "ship_shoot":
@@ -31,6 +32,8 @@ class Sound:
             self.boss_shoot_sound.play()
         if music == "boss_explosion":
             self.boss_explosion_sound.play()
+        if music == "dragon_growl":
+            self.dragon_growl.play()
 
 
     def _creat_sound(self):
@@ -41,5 +44,6 @@ class Sound:
         self.alien_shoot_sound = pygame.mixer.Sound('sound/alien_shoot_voice.mp3')
         self.boss_shoot_sound = pygame.mixer.Sound('sound/boss_shoot_voice.mp3')
         self.boss_explosion_sound = pygame.mixer.Sound('sound/boss_explosion_sound.mp3')
+        self.dragon_growl = pygame.mixer.Sound('sound/dragon_growl.mp3')
 
 

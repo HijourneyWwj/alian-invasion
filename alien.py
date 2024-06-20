@@ -42,7 +42,7 @@ class Alien(Sprite):
             self.shield.visible = True
 
         else:
-            self.image = pygame.image.load('images/new_alien2.png').convert_alpha()
+            self.image = pygame.image.load('images/new_alien.png').convert_alpha()
             self.alien_boss = False
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
